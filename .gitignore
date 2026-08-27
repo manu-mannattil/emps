@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+*.bin
+*.png
+*.pdf
+*.jpeg
+*.jpg
+*.txt
+*.npy
+*.pdf_tex
+*.svg
+
+data/
+Makefile
+*.tex

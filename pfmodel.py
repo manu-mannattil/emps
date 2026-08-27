@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+from numpy.fft import fft2, ifft2, fftfreq, fftn, ifftn, fftshift
+from utils import resize
 
 class PFVarStiff:
 
@@ -75,7 +77,7 @@ class PFVarStiff:
 
         # Wavenumber arrays.  The wavenumbers need to be multiplied by
         # 2pi to get usual physics conventions.
-        q = 2 * np.pi * np.fft.fftfreq(n, d=dx)
+        q = 2 * np.pi * fftfreq(n, d=dx)
         q2 = q[:, None]**2 + q[None, :]**2
 
         # Coarse-graining kernel.
@@ -90,10 +92,10 @@ class PFVarStiff:
             # DFTs assume that the "origin" of the kernel are at the "ends".
             # But the kernel we've defined above has an origin at the center.
             # So shift appropriately to put the origin at the "ends."
-            K = np.fft.fftshift(K)
+            K = fftshift(K)
             # The multiplication by dx^2 is to turn a discrete DFT sum into
             # an integral.
-            K_q = np.fft.fftn(K) * (dx**2)
+            K_q = fft2(K) * (dx**2)
 
             self.K_q_list.append(K_q)
 
@@ -117,6 +119,7 @@ class PFVarStiff:
                                                                                  h_list[k - 1])
                         self.coeff[k][i][j] = (h_field[i][j] - h_list[k - 1]) / (h_list[k] -
                                                                                  h_list[k - 1])
+        # A varying M(x) can be absorbed into the coefficients.
         for i in range(h_num):
             self.coeff[i] *= M_field
 
@@ -129,21 +132,28 @@ class PFVarStiff:
         self.C = 1 + kappa*q2*q2*dt
 
     def evolve(self):
-        """Evolves the energy-minimization equation in time."""
-        psi_q = np.fft.fftn(self.psi)
+        """Evolves the energy-minimization equation (Model B) in time."""
+        psi_q = fft2(self.psi)
         eta = self.b * self.psi * self.psi * self.psi
 
+        # The elastic energy is approximated as a sum.  The variational
+        # derivative of the ith term is [K(c*psi) + c*K(psi)]/2, where
+        # c is the coefficient field and K(...) represents
+        # coarse-graining.
         for i in range(self.h_num):
-            psi_h = self.coeff[i] * np.fft.ifftn(psi_q * self.K_q_list[i])
+            # First we coarse-grain c*psi by computing K(c*psi):
+            cpsi_q = fft2(self.coeff[i] * self.psi)
+            eta_i = ifft2(cpsi_q * self.K_q_list[i])
 
-            psi_coeff_q = np.fft.fftn(self.psi * self.coeff[i])
-            psi_h += np.fft.ifftn(psi_coeff_q * self.K_q_list[i])
+            # Next we coarse-grain psi and find the product c*K(psi):
+            eta_i += self.coeff[i] * ifft2(psi_q * self.K_q_list[i])
 
-            eta += 0.5 * psi_h.real
+            eta_i = 0.5 * eta_i.real
+            eta += eta_i
 
-        eta_q = np.fft.fftn(eta)
+        eta_q = fft2(eta)
         psi_q = (self.A * psi_q - self.B * eta_q) / self.C
-        self.psi = np.fft.ifftn(psi_q).real
+        self.psi = ifft2(psi_q).real
 
 class PFUniaxial:
 
@@ -156,12 +166,12 @@ class PFUniaxial:
                  a=0.025,
                  b=2,
                  kappa=0.013,
-                 M=4000,
+                 nukbt=300,
                  h=0.5,
                  p=1,
-                 d=2,
                  n=128,
                  L=5,
+                 d=2,
                  dt=1,
                  disorder=0.1):
         """Phase-field model for elastic microphase separation.
@@ -182,8 +192,6 @@ class PFUniaxial:
             Landau parameter b (in kPa).
         kappa : float
             Interfacial parameter (in kPa μm^2).
-        M : float
-            Rescaled longitudinal modulus (in kPa)
         h : float
             Coarse-graining length (in μm).
         d : int
@@ -197,15 +205,13 @@ class PFUniaxial:
         disorder: float
             Controls the randomness in the initial configuration.
         """
-        if d not in (2, 3):
-            raise ValueError(f"The dimension (d = {d}) must be 2, or 3.")
-
         # Choose a random initial condition if none is given.  Too much
         # randomness can result in overflows, whereas too little
         # randomness will sometimes prevent the system from reaching its
         # true energy minimum.
         if psi_0 is None:
-            self.psi = np.random.normal(size=(n, ) * d, scale=disorder)
+            self.psi = np.random.normal(size=(n//8, ) * d, scale=disorder)
+            self.psi = resize(self.psi, n)
         else:
             self.psi = psi_0
 
@@ -219,28 +225,25 @@ class PFUniaxial:
         # Wavenumber arrays.  The wavenumbers need to be multiplied by
         # 2pi to get usual physics conventions.
         q = 2 * np.pi * np.fft.fftfreq(n, d=dx)
-        if d == 1:
-            q2 = q**2
-        elif d == 2:
+        if d == 2:
             q2 = q[:, None]**2 + q[None, :]**2
         else:
             q2 = q[:, None, None]**2 + q[None, :, None]**2 + q[None, None, :]**2
 
         # Coarge-graining lengths.
         h_x = h * p
-        h_y = h / np.sqrt(p)
-        h_z = h / np.sqrt(p)
+        h_y = h/np.sqrt(p)
 
         # Coarse-graining kernel.
         if d == 2:
             X, Y = np.meshgrid(x, x)
             K = np.exp(-(X * X / (4 * h_x**2) + Y * Y / (4 * h_y**2)))
         else:
+            h_z = h/np.sqrt(p)
             X, Y, Z = np.meshgrid(x, x, x)
             K = np.exp(-(X * X / (4 * h_x**2) + Y * Y / (4 * h_y**2) + Z * Z / (4 * h_z**2)))
-            # Normalization.
             K /= np.sqrt(4 * np.pi * h_z**2)
-
+            
         # Common normalization.
         K /= np.sqrt(4 * np.pi * h_x**2)
         K /= np.sqrt(4 * np.pi * h_y**2)
@@ -248,13 +251,17 @@ class PFUniaxial:
         # DFTs assume that the "origin" of the kernel are at the "ends".
         # But the kernel we've defined above has an origin at the center.
         # So shift appropriately to put the origin at the "ends."
-        K = np.fft.fftshift(K)
+        K = fftshift(K)
         # The multiplication by dx^d is to turn a discrete DFT sum into
         # an integral.
-        K_q = np.fft.fftn(K) * (dx**d)
+        K_q = fftn(K) * (dx**d)
 
-        M_q = M * ((p**2 - 1/p) * (q**2 + 1e-10) / (q2+1e-10) + 1/p)
-        #M_q = M/p
+        # \hat{q_x}^2 = q_x^2/q^2.
+        # Alternatively: q_x2 = q[None, None, :] ** 2 / (q2 + 1e-5)
+        q_x2 = q**2/(q2 + 1e-10)
+
+        # Non-coarse-grained longitudinal modulus.
+        M_q = nukbt * phi_c**(-5/3) * ((p**2 - 1/p) * q_x2 + 1/p + phi_c**(2/3))
 
         # Precomputable stuff that's used in each step.
         self.A = 1 - 3 * a * (T-T_c) * q2 * dt
@@ -263,8 +270,8 @@ class PFUniaxial:
 
     def evolve(self):
         """Evolves the energy-minimization equation in time."""
-        psi_q = np.fft.fftn(self.psi)
-        psi3_q = np.fft.fftn(self.psi**3)
+        psi_q = fftn(self.psi)
+        psi3_q = fftn(self.psi**3)
 
         psi_q = (self.A * psi_q - self.B * psi3_q) / self.C
-        self.psi = np.fft.ifftn(psi_q).real
+        self.psi = ifftn(psi_q).real
