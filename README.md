@@ -1,7 +1,7 @@
 # Elastic microphase separation
 
 [![arXiv](https://img.shields.io/badge/arXiv-2607.27516-d62728)](https://arxiv.org/abs/2607.27516)
-[![arXiv](https://img.shields.io/badge/arXiv-2607.27516-d62728)](https://arxiv.org/abs/2607.27516)
+[![arXiv](https://img.shields.io/badge/arXiv-2608.26520-1c1a17)](https://arxiv.org/abs/2608.26520)
 
 The Python scripts in this repository require the standard Python
 scientific stack ([NumPy][numpy] + [SciPy][scipy]).  Plotting requires
