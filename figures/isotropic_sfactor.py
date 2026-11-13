@@ -8,9 +8,10 @@ from params import parameters
 data = np.loadtxt("../experiments/sfactor.dat")
 temp = np.array([59.907, 58.237, 56.567, 54.897, 53.227, 51.557, 49.887, 48.217, 46.547])
 
-q = 1e3*data[0] # wavenumber um^-1
+q_exp = 1e3*data[0] # wavenumber um^-1
 
 rc = {
+    "figure.figsize": [260 * charu.pt, 260 / charu.golden * charu.pt],
     "charu.doc": "aps",
     "charu.tex": True,
     "charu.tex.font": "fourier",
@@ -18,7 +19,9 @@ rc = {
 }
 
 with plt.rc_context(rc):
-    fig, ax = plt.subplots()
+    fig, (ax_top, ax) = plt.subplots(2, 1, sharex=True, gridspec_kw={"height_ratios": [1, 3.75]})
+
+    #fig.subplots_adjust(hspace=-0.5)  # adjust space between Axes
 
     # Parameters in the Landau energy (estimated).
     T_c = 70
@@ -41,8 +44,8 @@ with plt.rc_context(rc):
     S_norm = data[9][20:].max()
     i = data[9][20:].argmax()
     for i in range(1, 9 + 1):
-        ax.plot(q, data[i]/S_norm, "C0--", alpha=0.75)
-    ax.plot([], [], "C0--", alpha=0.75, label="experiment")
+        ax.plot(q_exp, data[i]/S_norm, "C0--", alpha=0.75)
+    ax.plot([], [], "C0--", alpha=0.75)
 
     # Normalize the theoretical S(q) curves such that the peak at the
     # lowest temperature is unity.
@@ -60,7 +63,6 @@ with plt.rc_context(rc):
 
         ax.plot(q, S_q, color="C3")
 
-    ax.plot([], [], "C3-", label="theory")
     ax.set_ylabel(r"$S(q)$")
     ax.set_xlabel(r"$q$ ($\textsf{\textmu m}^{-1})$")
 
@@ -79,12 +81,62 @@ with plt.rc_context(rc):
             rotation=90,
             color="#666666")
 
-    ax.plot([q_max, q_max], [-10, 10], "k--")
     ax.set_ylim(0, 1.2)
     ax.set_xlim(0, 16)
-    ax.legend()
 
-    plt.tight_layout()
+    # Top axis -------------------------------------------------------------
+
+    ax_top.set_ylim(1e7, 2e7)  # most of the data
+
+    # Normalize the experimental I(q) curves such that the peak at the
+    # lowest temperature is unity.
+    S_norm = data[9][20:].max()
+    i = data[9][20:].argmax()
+    for i in range(1, 9 + 1):
+        ax_top.plot(q_exp, data[i]/S_norm, "C0--", alpha=0.75)
+
+    # Hide the spines between ax and ax_top.
+    ax_top.spines.bottom.set_visible(False)
+    ax.spines.top.set_visible(False)
+    ax_top.xaxis.tick_top()
+    ax_top.tick_params(labeltop=False)  # don't put tick labels at the top
+    ax.xaxis.tick_bottom()
+
+    # Broken line. 0
+    d = 0.5 # slant
+    kwargs = dict(
+        marker=[(-1, -d), (1, d)],
+        markersize=7,
+        linestyle="none",
+        color="k",
+        mec="k",
+        mew=0.75,
+        clip_on=False,
+        in_layout=False,
+    )
+
+    # bottom edge of top axes
+    ax_top.plot(
+        [0, 1], [0, 0],
+        transform=ax_top.transAxes,
+        **kwargs
+    )
+
+    # top edge of bottom axes
+    ax.plot(
+        [0, 1], [1, 1],
+        transform=ax.transAxes,
+        **kwargs
+    )
+
+    ax_top.plot([], [], "C3-", label="theory")
+    ax_top.plot([], [], "C0--", alpha=0.75, label="experiment")
+    ax_top.legend(loc="upper right")
+
+    ax_top.set_yticklabels([r"$1 \times 10^7$", r"$2 \times 10^7$"])
+    ax_top.set_yticks([1e7, 2e7])
+
+    plt.tight_layout(h_pad=-0.1)
     plt.savefig(
         "isotropic_sfactor.pdf",
         crop=True,

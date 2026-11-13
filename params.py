@@ -137,6 +137,5 @@ def parameters(Y, dim=False, length_scale=1e-6, energy_scale=1e-15, kwargs=False
         return params["kappa"], params["h"], params["nukbt"], zeta(Y)
 
 if __name__ == "__main__":
-    #print_params(800)
-    print_params(350)
-    #print_params(10)
+    print_params(800)
+    print_params(10)

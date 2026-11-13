@@ -213,13 +213,12 @@ with plt.rc_context(rc):
     ax.text(-0.2, -2.2, "U", horizontalalignment="center")
 
     ax.set_xlabel(r"$\phi_0$")
-    ax.set_ylabel(r"$T$", rotation=None, va="center", ha="center", labelpad=8)
+    ax.set_ylabel(r"$T - T_{\mathsf{c}}$", va="center", ha="center", labelpad=8)
 
     plt.tight_layout()
     plt.savefig(
         "lamella_parallel_inc.pdf",
         crop=True,
-        optimize=True,
         transparent=True,
         facecolor="none",
         pad_inches=0,

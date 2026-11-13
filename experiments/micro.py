@@ -64,5 +64,3 @@ for i, Y in enumerate(Y_list):
 
 data = np.array(data)
 np.save("micro.npy", data)
-
-print(data[1])

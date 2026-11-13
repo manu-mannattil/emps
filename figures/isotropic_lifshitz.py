@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import charu
 
 rc = {
+    "figure.figsize": [264 * charu.pt, 264 / charu.golden * charu.pt],
     "charu.doc": "aps",
     "charu.tex": True,
     "charu.tex.font": "fourier",
@@ -48,32 +49,41 @@ with plt.rc_context(rc):
     ax.set_ylim(-0.5, 0.5)
 
     ax.text(1.37, -0.1,
-            "microphase",
+            "(v) microphase",
             va="center", ha="center")
     ax.text(1.37, -0.2,
             "(lamellae)",
             va="center", ha="center")
 
     ax.text(1.25, 0.38,
-            r"structured",
+            r"(iv) structured",
             va="center", ha="center")
     ax.text(1.25, 0.28,
             r"disordered $(q_\textsf{m} > 0)$",
             va="center", ha="center")
+    ax.text(1.25, 0.18,
+            r"$-1 < \chi < 0$",
+            va="center", ha="center")
 
     ax.text(0.8, 0.38,
-            r"structured",
+            r"(iii) structured",
             va="center", ha="center")
     ax.text(0.8, 0.28,
             r"disordered $(q_\textsf{m} = 0)$",
             va="center", ha="center")
+    ax.text(0.8, 0.18,
+            r"$0 < \chi < 1$",
+            va="center", ha="center")
 
+    ax.text(0.57, 0.18,
+            r"$\chi > 1$",
+            va="center", ha="center")
     ax.text(0.61, 0.061,
-            r"disordered",
+            r"(ii) disordered",
             va="center", ha="center")
 
     ax.text(0.86, -0.22,
-            r"low-temperature",
+            r"(i) low-temperature",
             va="center", ha="center")
     ax.text(0.86, -0.32,
             r"two-phase coexistence",

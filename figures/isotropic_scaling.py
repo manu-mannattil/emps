@@ -53,7 +53,7 @@ rc = {
     "charu.doc": "aps",
     "charu.tex": True,
     "charu.tex.font": "fourier",
-    "figure.figsize": [520 * charu.pt, 300 * charu.pt / charu.golden],
+    "figure.figsize": [530 * charu.pt, 320 * charu.pt / charu.golden],
     "xtick.minor.visible": False,
     "ytick.minor.visible": False,
 }
@@ -61,7 +61,7 @@ rc = {
 with plt.rc_context(rc):
     fig, axes = plt.subplots(1, 3)
 
-    labelpos = (0.1, 0.9)
+    labelpos = (0.5, -0.3)
 
     # Domain size ----------------------------------------------------------
 
@@ -111,7 +111,6 @@ with plt.rc_context(rc):
     slope = [-0.045, -0.045, -0.045, -0.045, -0.045]
     intercepts = [69.5, 62.35, 51.81, 39., 23.1]
 
-    # These are T_m and phi_0 for an initial swelling temperature of 60 C.
     for i in range(5):
         color = f"C{i}"
 
@@ -158,7 +157,7 @@ with plt.rc_context(rc):
     ax.set_xlabel("$Y$ (kPa)")
     ax.set_ylabel(r"$T_\mathrm{m}$ (${}^{\circ}\mathrm{C}$)")
     ax.set_xlim(-50, 850)
-    ax.text(0.1, 0.1, r"\textbf{(b)}", transform=ax.transAxes, fontsize=9, ha="center")
+    ax.text(*labelpos, r"\textbf{(b)}", transform=ax.transAxes, fontsize=9, ha="center")
 
     # Microphase separation temperature II ---------------------------------  
 
@@ -184,7 +183,7 @@ with plt.rc_context(rc):
 
         ax.plot([], [], "--o", markerfacecolor="w", color=color, label=f"$Y$ = {Y[0]:.0f}\\  kPa")
 
-    ax.set_xlim(0, 0.8)
+    ax.set_xlim(0.2, 0.8)
     ax.set_ylim(-10, 85)
     ax.set_xlabel(r"$\phi_{0}$")
     ax.set_ylabel(r"$T_\mathrm{m}$ (${}^{\circ}\mathrm{C}$)", labelpad=8)

@@ -190,7 +190,7 @@ with plt.rc_context(rc):
     ax.scatter(phi_exp, T_exp, s=43, facecolor="w", zorder=10)
     ax.scatter(phi_exp, T_exp, s=15, facecolor="none", edgecolor="k", linewidth=0.75, zorder=100)
 
-    ax.set_xlim(0, 0.75)
+    ax.set_xlim(0.2, 0.75)
     ax.set_ylim(-10, 60)
     ax.set_xlabel(r"$\phi_0$")
     ax.set_ylabel(r"$T\ (^\circ\!\mathrm{C})$")
@@ -198,8 +198,8 @@ with plt.rc_context(rc):
     # ax.scatter([0.2], [20], s=15, facecolor="none", edgecolor="k", linewidth=0.75, zorder=100)
     # ax.scatter([0.42], [20], s=15, facecolor="none", edgecolor="k", linewidth=0.75, zorder=100)
 
-    ax.scatter([0.2], [T_c - Q/a], s=15, facecolor="k", zorder=200)
-    ax.text(0.2, T_c - Q/a + 3.5, r"$T_{\mathrm{c}}'$", horizontalalignment="center")
+    ax.scatter([0.2], [T_c - Q/a], s=15, facecolor="k", zorder=200, clip_on=False)
+    ax.text(0.175, T_c - Q/a - 1.5, r"$T_{\mathrm{c}}'$", horizontalalignment="center")
 
     # ax.text(0.2, 12, "b", horizontalalignment="center")
     # ax.scatter([0.2], [20], s=15, facecolor="k")
@@ -207,7 +207,7 @@ with plt.rc_context(rc):
     # ax.text(0.5, 12, "c", horizontalalignment="center")
     # ax.scatter([0.5], [20], s=15, facecolor="k")
 
-    ax.text(0.2, 0, "lamellae", horizontalalignment="center")
+    ax.text(0.29, 0, "lamellae", horizontalalignment="center")
     ax.text(0.52, 0, "hexagonal phase", horizontalalignment="center")
     ax.text(0.6, 47, "uniform phase", horizontalalignment="center")
 

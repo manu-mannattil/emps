@@ -220,7 +220,7 @@ with plt.rc_context(rc):
     ax.set_xlim(phi_c - 0.8, 1.0)
     ax.set_ylim(-3.5, -2.25)
     ax.set_xlabel(r"$\phi_0$", labelpad=6)
-    ax.set_ylabel(r"$T$", va="center", ha="center", labelpad=8)
+    ax.set_ylabel(r"$T - T_{c}$", va="center", ha="center", labelpad=8)
 
     # Linear stability curves for hexagons and stripes.
     # ax.plot(np.sqrt(-15 * (adT+Q) / (36*b)), T, "r--") # hexagons
